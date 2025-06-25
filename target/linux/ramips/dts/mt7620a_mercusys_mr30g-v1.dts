@@ -1,0 +1,114 @@
+// SPDX-License-Identifier: GPL-2.0-or-later OR MIT
+
+#include <dt-bindings/leds/common.h>
+
+#include "mt7620a_mercusys_16m.dtsi"
+
+/ {
+	compatible = "mercusys,mr30g-v1", "ralink,mt7620a-soc";
+	model = "MERCUSYS MR30G v1";
+
+	aliases {
+		led-boot = &led_power_green;
+		led-failsafe = &led_power_orange;
+		led-running = &led_power_green;
+		led-upgrade = &led_power_orange;
+		label-mac-device = &ethernet;
+	};
+
+	leds {
+		compatible = "gpio-leds";
+
+		led_power_green: led_green {
+			label = "power:green";
+			function = LED_FUNCTION_POWER;
+			color = <LED_COLOR_ID_GREEN>;
+			gpios = <&gpio2 2 GPIO_ACTIVE_HIGH>;
+		};
+
+		led_power_orange: led_orange {
+			label = "power:orange";
+			function = LED_FUNCTION_FAULT;
+			color = <LED_COLOR_ID_ORANGE>;
+			gpios = <&gpio2 3 GPIO_ACTIVE_HIGH>; 
+		};
+
+		led-lan1 {
+			label = "green:lan1";
+			function = LED_FUNCTION_LAN;
+			color = <LED_COLOR_ID_GREEN>;
+			gpios = <&gpio2 6 GPIO_ACTIVE_HIGH>;
+		};
+
+		led-lan2 {
+			label = "green:lan2";
+			function = LED_FUNCTION_LAN;
+			color = <LED_COLOR_ID_GREEN>;
+			gpios = <&gpio2 13 GPIO_ACTIVE_HIGH>;
+		};
+
+		led-wan {
+			label = "green:wan";
+			function = LED_FUNCTION_WAN;
+			color = <LED_COLOR_ID_GREEN>;
+			gpios = <&gpio2 12 GPIO_ACTIVE_HIGH>;
+		};
+
+	};
+	
+	rtl8367s {
+		compatible = "realtek,rtl8367b";
+		realtek,extif = <7 1 0 1 1 1 1 1 1 2>;
+		mii-bus = <&mdio0>;
+		phy-id = <29>;
+	};
+};
+
+&spi0 {
+	flash@0 {
+		#address-cells = <1>;
+		#size-cells = <1>;
+	};
+};
+
+&state_default {
+	gpio {
+		groups = "i2c", "uartf", "ephy", "rgmii2";
+		function = "gpio";
+	};
+};
+
+&ethernet {
+	pinctrl-names = "default";
+	pinctrl-0 = <&rgmii1_pins &mdio_pins>;
+
+	port@5 {
+		status = "okay";
+		mediatek,fixed-link = <1000 1 1 1>;
+		phy-mode = "rgmii";
+	};
+
+	mdio0: mdio-bus {
+		status = "okay";
+		reset-gpios = <&gpio2 20 GPIO_ACTIVE_LOW>;
+		reset-delay-us = <10000>;
+	};
+};
+
+&wmac {
+	pinctrl-names = "default", "pa_gpio";
+	pinctrl-0 = <&pa_pins>;
+	pinctrl-1 = <&pa_gpio_pins>;
+	nvmem-cells = <&eeprom_radio_0>, <&macaddr_rom_f100 0>;
+	nvmem-cell-names = "eeprom", "mac-address";
+};
+
+&pcie0 {
+	wifi@0,0 {
+		compatible = "mediatek,mt76";
+		reg = <0x0000 0 0 0 0>;
+		nvmem-cells = <&eeprom_radio_8000>, <&macaddr_rom_f100 2>;
+		nvmem-cell-names = "eeprom", "mac-address";
+		ieee80211-freq-limit = <5000000 6000000>;
+	};
+};

@@ -1253,6 +1253,22 @@ define Device/tplink_archer-c5-v4
 endef
 TARGET_DEVICES += tplink_archer-c5-v4
 
+define Device/mercusys_mr30g-v1
+  $(Device/tplink-v2)
+  SOC := mt7620a
+  IMAGE_SIZE := 15616k
+  TPLINK_FLASHLAYOUT := 16Mmtk
+  TPLINK_HWID := 0x04da857c
+  TPLINK_HWREV := 0x0c000600
+  TPLINK_HWREVADD := 0x04000000
+  IMAGES += tftp-recovery.bin
+  IMAGE/tftp-recovery.bin := pad-extra 128k | $$(IMAGE/factory.bin)
+  DEVICE_MODEL := MR30G
+  DEVICE_VARIANT := v1
+  DEVICE_PACKAGES := kmod-mt7615e kmod-mt7663-firmware-ap kmod-switch-rtl8367b
+endef
+TARGET_DEVICES += mercusys_mr30g-v1
+
 define Device/tplink_archer-c50-v1
   $(Device/tplink-v2)
   SOC := mt7620a
