@@ -18,6 +18,7 @@
 /overlay
 /package/feeds
 /package/openwrt-packages
+/package/luci-theme-argon/
 /*.patch
 /llvm-bpf*
 key-build*
