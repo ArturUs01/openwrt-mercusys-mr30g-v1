@@ -1,108 +1,159 @@
+# **GUIDE FOR INSTALLING OPENWRT ON MERCUSYS MR30G V1**
+
 ![OpenWrt logo](include/logo.png)
 
-OpenWrt Project is a Linux operating system targeting embedded devices. Instead
-of trying to create a single, static firmware, OpenWrt provides a fully
-writable filesystem with package management. This frees you from the
-application selection and configuration provided by the vendor and allows you
-to customize the device through the use of packages to suit any application.
-For developers, OpenWrt is the framework to build an application without having
-to build a complete firmware around it; for users this means the ability for
-full customization, to use the device in ways never envisioned.
+> \[!WARNING]
+> **Proceed at your own risk.** This process involves opening the router, replacing the SPI flash chip, and flashing a custom U-Boot bootloader. Mistakes may permanently damage your device or render it inoperable (bricked).
 
-Sunshine!
+> \[!CAUTION]
+> **You must dump the original firmware before making any modifications.** The calibration data for the Wi-Fi radios is located in a partition at the end of the factory flash. Without this data, Wi-Fi may not function properly or at all. **You will need this dump later.** Also, make sure to save your ISP login details (e.g., PPPoE username and password) from the router’s web interface.
 
-## Download
+> \[!IMPORTANT]
+> **Firmware and bootloader based on TP-Link Archer C5 v4.** The OpenWrt firmware, its config files (DTS, DTSI, LED, and network), and the custom U-Boot bootloader for MR30G v1 were made using the source code and configurations from the TP-Link Archer C5 v4 (GPL sources). U-Boot modifications include correct GPIO setup for LEDs and 16 MB SPI flash support.
 
-Built firmware images are available for many architectures and come with a
-package selection to be used as WiFi home router. To quickly find a factory
-image usable to migrate from a vendor stock firmware to OpenWrt, try the
-*Firmware Selector*.
+---
 
-* [OpenWrt Firmware Selector](https://firmware-selector.openwrt.org/)
+## **STEPS FOR INSTALLATION**
 
-If your device is supported, please follow the **Info** link to see install
-instructions or consult the support resources listed below.
+> \[!IMPORTANT]
+> **You’ll need:**
+>
+> * An SPI flash programmer (e.g., CH341A)
+> * A new 16 MB flash chip (e.g., Winbond W25Q128FVSG — recommended and tested)
+>
+> The original flash chip is only 4 MB, which is insufficient for OpenWrt. Replacing it is essential for proper firmware support and system expansion.
 
-## 
+### **1. Hardware Mod: Replacing the Flash Chip**
 
-An advanced user may require additional or specific package. (Toolchain, SDK, ...) For everything else than simple firmware download, try the wiki download page:
+1. **Disassemble the router:**
 
-* [OpenWrt Wiki Download](https://openwrt.org/downloads)
+   * First, take a photo of the bottom sticker (model, MAC, default Wi-Fi password).
+   * Then remove the sticker carefully — it covers a screw slightly above and to the right of center.
+   * Unscrew it and pry off the top cover using a plastic card or guitar pick. Go around the edges gently to unclip everything.
+   * Be careful not to insert the tool too deep to avoid damaging internal parts or antenna cables.
 
-## Development
+2. **Locate the factory flash chip:**
 
-To build your own firmware you need a GNU/Linux, BSD or macOS system (case
-sensitive filesystem required). Cygwin is unsupported because of the lack of a
-case sensitive file system.
+   * You’ll find a small 8-pin chip left of the white heatsink. It will be labeled something like `cFeon QH32B-104HIP` — this is the original flash chip.
 
-### Requirements
+3. **Remove and dump the flash:**
 
-You need the following tools to compile OpenWrt, the package names vary between
-distributions. A complete list with distribution specific packages is found in
-the [Build System Setup](https://openwrt.org/docs/guide-developer/build-system/install-buildsystem)
-documentation.
+   * Carefully desolder the chip and solder it to the adapter for your programmer.
+   * Connect the programmer to your PC and dump the chip to a file named `dump.bin`.
+   * Verify the dump to ensure it's complete and not corrupted.
+   * Save this file somewhere safe on your disk — you will absolutely need it later.
 
+> \[!IMPORTANT]
+> **TIP:** Newer versions of the official software for programmers like CH341A are known to be unstable. Consider using NeoProgrammer (Windows) or `flashrom` (Linux).
+
+4. **Prepare the new flash chip:**
+
+   * Remove the factory chip from the programmer adapter and store it — it won’t be used again.
+   * Solder a new 16 MB flash chip (such as any compatible model, e.g., Winbond W25Q128FVSG) to the programmer’s adapter.
+   * Erase and confirm it is fully blank using your programming software.
+
+### **2. Editing and Writing the OpenWrt Dump**
+
+We will use a prepared firmware image file named something like `dump_openwrt_04-07-25.bin`. This file includes:
+
+* A custom U-Boot bootloader modified for this router.
+* The latest clean OpenWrt firmware (at the time of release).
+* Properly aligned partition layout.
+* Placeholders for inserting your device’s MAC address and radio calibration data.
+
+1. Open both your `dump.bin` (original dump) and `dump_openwrt_xx-xx-xx.bin` in a hex editor (e.g., HxD for Windows or any hex editor for Linux).
+
+2. **Insert MAC address:**
+
+   * In `dump.bin`, go to address `003FE000`.
+   * You should see your MAC address there (it should look approximately like: `C0 25 XX XX XX XX`).
+   * Copy those 6 bytes.
+   * In `dump_openwrt_xx-xx-xx.bin`, go to the beginning of address `00FDF100` and paste your MAC address with overwrite, replacing the bytes `00 00 00 00 00 00`.
+
+3. **Insert radio calibration data:**
+
+   * **2.4 GHz radio:**
+
+     * In `dump.bin`, go to address `003FF000` (for reference, the hex code should begin with `20 76 05 01`).
+     * Copy the range from `003FF000` to `003FF300`.
+     * In `dump_openwrt_xx-xx-xx.bin`, go to the beginning of address `00FF0000` and paste with overwrite.
+
+   * **5 GHz radio:**
+
+     * In `dump.bin`, go to address `003FF800` (for reference, the hex code should begin with `63 76 00 01`).
+     * Copy the range from `003FF800` to `003FFE00`.
+     * In `dump_openwrt_xx-xx-xx.bin`, go to the beginning of address `00FF8000` and paste with overwrite.
+
+> \[!CAUTION]
+> Do **not** modify the `dump.bin` file in any way! Only read from it.
+
+4. Save the edited `dump_openwrt_xx-xx-xx.bin`. Ensure all changes were saved properly.
+
+5. Flash the edited file to the new chip using the programmer. Make sure to verify the write operation afterward to confirm that the file was written correctly and is not corrupted.
+
+6. Desolder the new chip from the adapter and solder it back onto the router PCB. Be sure to align the notch/key correctly.
+
+---
+
+## **3. First Boot and Verification**
+
+1. Power on the router. If the power LED lights up, it’s alive!
+2. Wait — the first boot may take up to 2 minutes.
+3. Plug an Ethernet cable from your computer into the router and go to [http://192.168.1.1](http://192.168.1.1) in your browser.
+4. The OpenWrt web interface will appear. No password is set yet, just click **Login**.
+
+> \[!IMPORTANT]
+> After flashing, Wi-Fi is disabled by default. Go to **Network → Wireless**, click **Edit** for each network (2.4 GHz and 5 GHz), and check the **Maximum transmit power** field in the drop-down menu. If you see a value ≥ 20 dBm (100 mW), your radio calibration data from `dump_openwrt_xx-xx-xx.bin` was applied correctly.
+
+✅ **Process completed! Your router is now fully ready to run OpenWrt.**
+
+---
+
+## **Building OpenWrt from Source**
+
+To build your own OpenWrt firmware:
+
+```bash
+./scripts/feeds update -a
+./scripts/feeds install -a
+make menuconfig
 ```
-binutils bzip2 diff find flex gawk gcc-6+ getopt grep install libc-dev libz-dev
-make4.1+ perl python3.7+ rsync subversion unzip which
+
+In `menuconfig`, choose:
+
+* **Target System:** MediaTek Ralink MIPS
+* **Subtarget:** MT7620 based boards
+* **Target Profile:** TP-Link MR30G v1
+
+Then run:
+
+```bash
+make
 ```
 
-### Quickstart
+This will download the sources, build the toolchain, kernel, and selected packages.
 
-1. Run `./scripts/feeds update -a` to obtain all the latest package definitions
-   defined in feeds.conf / feeds.conf.default
+### **Upgrading Firmware**
 
-2. Run `./scripts/feeds install -a` to install symlinks for all obtained
-   packages into package/feeds/
+Once you’ve built a new image, flash it via:
 
-3. Run `make menuconfig` to select your preferred configuration for the
-   toolchain, target system & firmware packages.
+* **System → Backup / Flash Firmware → Flash new firmware image**
 
-4. Run `make` to build your firmware. This will download all sources, build the
-   cross-compile toolchain and then cross-compile the GNU/Linux kernel & all chosen
-   applications for your target system.
+Use the image with the `sysupgrade` suffix (e.g., `openwrt-...-sysupgrade.bin`).
 
-### Related Repositories
+If that fails or causes problems, recover using **TFTP** mode:
 
-The main repository uses multiple sub-repositories to manage packages of
-different categories. All packages are installed via the OpenWrt package
-manager called `opkg`. If you're looking to develop the web interface or port
-packages to OpenWrt, please find the fitting repository below.
+### **TFTP Recovery Mode**
 
-* [LuCI Web Interface](https://github.com/openwrt/luci): Modern and modular
-  interface to control the device via a web browser.
+1. Set your PC's IP address to `192.168.0.66`.
+2. Start Tftpd64 (or any TFTP server).
+3. Place the image with the `tftp-recovery` suffix in the root folder of the TFTP program and rename it to `tp_recovery.bin`.
+4. Connect your PC to the router via Ethernet.
+5. Hold the **Reset** button and power on the router. Keep holding Reset.
+6. The firmware transfer should begin — you will see a status/progress bar in the Tftpd64 window.
 
-* [OpenWrt Packages](https://github.com/openwrt/packages): Community repository
-  of ported packages.
+If this doesn't work or issues occur:
 
-* [OpenWrt Routing](https://github.com/openwrt/routing): Packages specifically
-  focused on (mesh) routing.
-
-* [OpenWrt Video](https://github.com/openwrt/video): Packages specifically
-  focused on display servers and clients (Xorg and Wayland).
-
-## Support Information
-
-For a list of supported devices see the [OpenWrt Hardware Database](https://openwrt.org/supported_devices)
-
-### Documentation
-
-* [Quick Start Guide](https://openwrt.org/docs/guide-quick-start/start)
-* [User Guide](https://openwrt.org/docs/guide-user/start)
-* [Developer Documentation](https://openwrt.org/docs/guide-developer/start)
-* [Technical Reference](https://openwrt.org/docs/techref/start)
-
-### Support Community
-
-* [Forum](https://forum.openwrt.org): For usage, projects, discussions and hardware advise.
-* [Support Chat](https://webchat.oftc.net/#openwrt): Channel `#openwrt` on **oftc.net**.
-
-### Developer Community
-
-* [Bug Reports](https://bugs.openwrt.org): Report bugs in OpenWrt
-* [Dev Mailing List](https://lists.openwrt.org/mailman/listinfo/openwrt-devel): Send patches
-* [Dev Chat](https://webchat.oftc.net/#openwrt-devel): Channel `#openwrt-devel` on **oftc.net**.
-
-## License
-
-OpenWrt is licensed under GPL-2.0
+* Check your Ethernet cable.
+* Ensure your PC IP is set correctly.
+* Retry the procedure from the start.
