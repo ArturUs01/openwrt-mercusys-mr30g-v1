@@ -4,7 +4,7 @@
   <summary>🌐 Language / Выбрать язык</summary>
 
   - 🇺🇸 [English](README.md)  
-  - [Русский](README.ru.md)
+  - [Русский](README_RU.md)
 
 </details>
 
