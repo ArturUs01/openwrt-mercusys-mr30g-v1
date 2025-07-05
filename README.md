@@ -1,5 +1,13 @@
 # **GUIDE FOR INSTALLING OPENWRT ON MERCUSYS MR30G V1**
 
+<details>
+  <summary>🌐 Language / Выбрать язык</summary>
+
+  - 🇺🇸 [English](README.md)  
+  - [Русский](README.ru.md)
+
+</details>
+
 ![OpenWrt logo](include/logo.png)
 
 > \[!WARNING]
@@ -21,13 +29,13 @@
 > * An SPI flash programmer (e.g., CH341A)
 > * A new 16 MB flash chip (e.g., Winbond W25Q128FVSG — recommended and tested)
 >
-> The original flash chip is only 4 MB, which is insufficient for OpenWrt. Replacing it is essential for proper firmware support and system expansion.
+> The factory flash chip has only 4 MB of memory, which is not enough for OpenWrt. Replacing it is essential for proper firmware support and system expansion.
 
 ### **1. Hardware Mod: Replacing the Flash Chip**
 
 1. **Disassemble the router:**
 
-   * First, take a photo of the bottom sticker (model, MAC, default Wi-Fi password).
+   * First, take a photo of the sticker on the bottom of the router (model, MAC, default Wi-Fi password).
    * Then remove the sticker carefully — it covers a screw slightly above and to the right of center.
    * Unscrew it and pry off the top cover using a plastic card or guitar pick. Go around the edges gently to unclip everything.
    * Be careful not to insert the tool too deep to avoid damaging internal parts or antenna cables.
@@ -54,7 +62,7 @@
 
 ### **2. Editing and Writing the OpenWrt Dump**
 
-We will use a prepared firmware image file named something like `dump_openwrt_04-07-25.bin`. This file includes:
+We will use a prepared firmware image file with a name like `dump_openwrt_04-07-25.bin`, which you can download in the **Releases** section. This file includes:
 
 * A custom U-Boot bootloader modified for this router.
 * The latest clean OpenWrt firmware (at the time of release).
@@ -99,13 +107,13 @@ We will use a prepared firmware image file named something like `dump_openwrt_04
 
 1. Power on the router. If the power LED lights up, it’s alive!
 2. Wait — the first boot may take up to 2 minutes.
-3. Plug an Ethernet cable from your computer into the router and go to [http://192.168.1.1](http://192.168.1.1) in your browser.
+3. Plug an Ethernet cable from your computer into the router and go to [http://192.168.1.1](http://192.168.1.1) in browser.
 4. The OpenWrt web interface will appear. No password is set yet, just click **Login**.
 
 > \[!IMPORTANT]
-> After flashing, Wi-Fi is disabled by default. Go to **Network → Wireless**, click **Edit** for each network (2.4 GHz and 5 GHz), and check the **Maximum transmit power** field in the drop-down menu. If you see a value ≥ 20 dBm (100 mW), your radio calibration data from `dump_openwrt_xx-xx-xx.bin` was applied correctly.
+> After flashing, Wi-Fi is disabled by default. Go to **Network → Wireless**, click **Edit** for each network (2.4 GHz and 5 GHz), and check the **Maximum transmit power** field in the drop-down menu. If you see a value ≥ 20 dBm (100 mW), your radio calibration data in `dump_openwrt_xx-xx-xx.bin` was applied correctly.
 
-✅ **Process completed! Your router is now fully ready to run OpenWrt.**
+✅ **Done! Your router is now running OpenWrt.**
 
 ---
 
