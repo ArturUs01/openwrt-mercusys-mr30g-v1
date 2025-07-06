@@ -3,7 +3,7 @@
 <details>
   <summary>🌐 Language / Выбрать язык</summary>
 
-  - 🇺🇸 [English](README.md)  
+  - [English](README.md)  
   - [Русский](README_RU.md)
 
 </details>
@@ -62,7 +62,7 @@
 
 ### **2. Editing and Writing the OpenWrt Dump**
 
-We will use a prepared firmware image file with a name like `dump_openwrt_04-07-25.bin`, which you can download in the **Releases** section. This file includes:
+We will use a prepared firmware image file with a name like `dump_openwrt_06-07-25.bin`, which you can download in the **Releases** section. This file includes:
 
 * A custom U-Boot bootloader modified for this router.
 * The latest clean OpenWrt firmware (at the time of release).
@@ -76,7 +76,7 @@ We will use a prepared firmware image file with a name like `dump_openwrt_04-07-
    * In `dump.bin`, go to address `003FE000`.
    * You should see your MAC address there (it should look approximately like: `C0 25 XX XX XX XX`).
    * Copy those 6 bytes.
-   * In `dump_openwrt_xx-xx-xx.bin`, go to the beginning of address `00FDF100` and paste your MAC address with overwrite, replacing the bytes `00 00 00 00 00 00`.
+   * In `dump_openwrt_xx-xx-xx.bin`, go to the beginning of address `00FDF100` and paste your MAC address with **overwrite** (CTRL+B), replacing the bytes `00 00 00 00 00 00`.
 
 3. **Insert radio calibration data:**
 
@@ -84,13 +84,13 @@ We will use a prepared firmware image file with a name like `dump_openwrt_04-07-
 
      * In `dump.bin`, go to address `003FF000` (for reference, the hex code should begin with `20 76 05 01`).
      * Copy the range from `003FF000` to `003FF300`.
-     * In `dump_openwrt_xx-xx-xx.bin`, go to the beginning of address `00FF0000` and paste with overwrite.
+     * In `dump_openwrt_xx-xx-xx.bin`, go to the beginning of address `00FF0000` and paste with **overwrite** (CTRL+B).
 
    * **5 GHz radio:**
 
      * In `dump.bin`, go to address `003FF800` (for reference, the hex code should begin with `63 76 00 01`).
      * Copy the range from `003FF800` to `003FFE00`.
-     * In `dump_openwrt_xx-xx-xx.bin`, go to the beginning of address `00FF8000` and paste with overwrite.
+     * In `dump_openwrt_xx-xx-xx.bin`, go to the beginning of address `00FF8000` and paste with **overwrite** (CTRL+B).
 
 > \[!CAUTION]
 > Do **not** modify the `dump.bin` file in any way! Only read from it.
