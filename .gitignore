@@ -19,6 +19,7 @@
 /package/feeds
 /package/openwrt-packages
 /package/luci-theme-argon/
+/package/luci-app-argon-config/
 /*.patch
 /llvm-bpf*
 key-build*
